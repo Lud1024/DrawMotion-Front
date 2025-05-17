@@ -4,7 +4,7 @@ const Consult = () => {
   const [imagenes, setImagenes] = useState([])
 
   useEffect(() => {
-    fetch('http://localhost:5000/guardar')
+    fetch('https://drawmotion-back.onrender.com/guardar')
       .then(res => res.json())
       .then(data => setImagenes(data))
       .catch(err => console.error('Error al cargar imágenes:', err))
@@ -25,7 +25,7 @@ const Consult = () => {
         {imagenes.map(({ _id, filename, nombre, fecha }) => (
           <div key={_id} className="bg-white rounded shadow p-4 text-center">
             <img
-              src={`http://localhost:5000/uploads/${filename}`}
+              src={`https://drawmotion-back.onrender.com/uploads/${filename}`}
               alt={`Dibujo de ${nombre}`}
               className="w-full h-auto border mb-4"
             />
