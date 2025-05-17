@@ -11,6 +11,7 @@ const teamImages = [
   { src: '/sauly.jpeg', name: 'Ing. Sauly Estefania Cermeño Morales' },
   { src: '/diego.jpeg', name: 'Ing. Diego Hernándezz' },
   { src: '/david.jpeg', name: 'Ing. Wilson David Ortega Quezada' },
+  { src: '/pedro.jpeg', name: 'Ing. Luis Pedro Melchor Martinez' },
   { src: '/chaloexpo.png', name: 'Ing. José Abraham Revolorio Chalo ' },
 ];
 
