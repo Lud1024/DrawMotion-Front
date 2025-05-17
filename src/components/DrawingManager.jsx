@@ -134,7 +134,7 @@ const SaveButton = () => {
       formData.append('nombre', nombre)
 
       try {
-        const res = await fetch('https://drawmotion-back.onrender.com/guardar', {
+        const res = await fetch('https://drawmotion-back.up.railway.app/guardar', {
           method: 'POST',
           body: formData,
         })
