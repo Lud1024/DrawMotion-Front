@@ -2,7 +2,7 @@ import { Home, Paintbrush, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 const Header = () => (
-<header className="bg-gray-800 text-white pt-2 pb-1 px-4 flex items-center justify-between">
+<header className="bg-gray-800 text-white pt-2 pb-2 px-5 flex items-center justify-between">
     {/* Logo y título */}
     <div className="flex items-center space-x-5">
       <img src="/logo.png" alt="Logo" className="h-20 w-20" />

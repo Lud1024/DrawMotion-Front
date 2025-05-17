@@ -10,7 +10,7 @@ function App() {
     <Router>
       <div className="min-h-screen flex flex-col">
         <Header />
-        <main className="flex-grow p-4">
+        <main className="flex-grow p-4 overflow-hidden">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/pintar" element={<Paint />} />
