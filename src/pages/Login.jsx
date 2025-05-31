@@ -79,15 +79,7 @@ function Login() {
               required
             />
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            <div className="flex justify-between text-sm text-gray-800">
-              <button
-                type="button"
-                onClick={() => navigate('/recuperacion')}
-                className="hover:underline text-left"
-              >
-                ¿Olvidó su contraseña?
-              </button>
-            </div>
+ 
             <button
               type="submit"
               className="text-white py-2 rounded transition"
