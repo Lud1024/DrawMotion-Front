@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+const token = localStorage.getItem('token');
 
 // ✅ MODAL DE NOMBRE
 const NameModal = ({ isOpen, onClose, onConfirm }) => {
@@ -16,7 +17,7 @@ const NameModal = ({ isOpen, onClose, onConfirm }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
       <div className="bg-white p-6 rounded shadow-lg w-80">
-        <h2 className="text-xl font-bold mb-4">¿Tu nombre?</h2>
+        <h2 className="text-xl font-bold mb-4">Nombre del dibujo</h2>
         <input
           type="text"
           value={nombre}
@@ -134,16 +135,20 @@ const SaveButton = () => {
       formData.append('nombre', nombre)
 
       try {
-        const res = await fetch('https://drawmotion-back.onrender.com/guardar', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/guardar`, {
           method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`, // ✅ AÑADIR ESTO
+          },
           body: formData,
-        })
+        });
+
         setFeedback({
           success: res.ok,
           message: res.ok
             ? 'Dibujo guardado con éxito.'
             : 'Error al guardar el dibujo.',
-        })
+        });
       } catch {
         setFeedback({ success: false, message: 'No se pudo conectar con el servidor.' })
       } finally {
