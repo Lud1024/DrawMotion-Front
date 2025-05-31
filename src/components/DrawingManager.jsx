@@ -138,7 +138,7 @@ const SaveButton = () => {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/guardar`, {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${token}`, // ✅ AÑADIR ESTO
+            Authorization: `Bearer ${token}`,
           },
           body: formData,
         });

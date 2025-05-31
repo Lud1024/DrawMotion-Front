@@ -17,11 +17,15 @@ const Consult = () => {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/guardar`, {
           headers: {
             Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': 'true'
           },
         });
 
-        if (!res.ok) {
-          throw new Error('No autorizado');
+        const contentType = res.headers.get('content-type');
+        if (!res.ok || !contentType.includes('application/json')) {
+          const text = await res.text();
+          console.error('Respuesta inesperada:', text);
+          throw new Error('Respuesta no válida del servidor');
         }
 
         const data = await res.json();
