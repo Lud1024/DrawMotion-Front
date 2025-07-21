@@ -295,7 +295,6 @@ const DrawingManager = () => {
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-gray-100">
-      <SaveButton />
 
       <div
         ref={areaRef}
