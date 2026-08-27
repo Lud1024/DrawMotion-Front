@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   Smile,
   Rocket,
-  MousePointerClick,
+  Pointer,
 } from 'lucide-react';
 import { GALERIA_HABILITADA, GUARDAR_HABILITADO } from '../config/features';
 
@@ -26,10 +26,10 @@ const pasos = [
     texto: 'Un puntero mágico sigue tu dedo índice apenas lo pones frente a la pantalla.',
   },
   {
-    icon: MousePointerClick,
+    icon: Pointer,
     color: 'from-brand-pink to-fuchsia-600',
-    titulo: 'Junta o separa',
-    texto: 'Une índice y pulgar para dibujar, sepáralos para levantar el lápiz. Cierra el puño y borra.',
+    titulo: 'Levanta el índice',
+    texto: 'Con el índice arriba dibujas. Baja el dedo para levantar el lápiz y cierra el puño para borrar.',
   },
   {
     icon: ImagePlus,
@@ -181,7 +181,7 @@ const Home = () => {
 
         <h2 className="text-3xl font-extrabold sm:text-4xl">¿Listo para mover las manos?</h2>
         <p className="mx-auto mt-4 max-w-xl text-slate-300">
-          Abre la cámara, junta el índice con el pulgar y deja que tu creatividad haga el resto.
+          Abre la cámara, levanta el índice y deja que tu creatividad haga el resto.
         </p>
         <Link to="/pintar" className="btn-primary mt-8 w-full sm:w-auto">
           <Palette size={20} />

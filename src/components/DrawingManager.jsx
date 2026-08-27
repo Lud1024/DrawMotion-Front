@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Eraser, Brush, Trash2, CameraOff, Video } from 'lucide-react'
+import { Eraser, Brush, Trash2, CameraOff, Video, Pointer } from 'lucide-react'
 import SaveButton from './SaveButton'
 import { GUARDAR_HABILITADO } from '../config/features'
 
@@ -158,19 +158,26 @@ const DrawingManager = () => {
       // coincida con lo que el usuario ve en pantalla.
       const x = (1 - landmarks[8].x) * area.width + offX
       const y = landmarks[8].y * area.height + offY
-      const thumbX = (1 - landmarks[4].x) * area.width + offX
-      const thumbY = landmarks[4].y * area.height + offY
 
       smoothedX.current =
         smoothedX.current == null ? x : smoothFactor * smoothedX.current + (1 - smoothFactor) * x
       smoothedY.current =
         smoothedY.current == null ? y : smoothFactor * smoothedY.current + (1 - smoothFactor) * y
 
-      const isFist = [8, 12, 16, 20].every((i) => landmarks[i].y > landmarks[i - 2].y + 0.03)
-      // Umbral proporcional al tamaño del área: funciona igual en móvil que en escritorio
-      const umbral = Math.max(18, area.width * 0.022)
-      const pinch = Math.hypot(x - thumbX, y - thumbY)
-      const draw = pinch < umbral || isFist
+      // Un dedo esta estirado si su punta queda POR ENCIMA de su nudillo medio (PIP).
+      // En coordenadas de imagen la Y crece hacia abajo, de ahi el "<".
+      // El margen evita que el gesto parpadee cuando el dedo esta a medio doblar.
+      const MARGEN = 0.03
+      const estirado = (punta, pip) => landmarks[punta].y < landmarks[pip].y - MARGEN
+      const doblado = (punta, pip) => landmarks[punta].y > landmarks[pip].y + MARGEN
+
+      // Puno cerrado: las cuatro puntas por debajo de sus nudillos → borrar
+      const isFist = doblado(8, 6) && doblado(12, 10) && doblado(16, 14) && doblado(20, 18)
+
+      // Gesto de señalar: solo el indice arriba, el resto recogidos → dibujar
+      const soloIndice = estirado(8, 6) && doblado(12, 10) && doblado(16, 14) && doblado(20, 18)
+
+      const draw = soloIndice || isFist
 
       const inside =
         smoothedX.current >= offX &&
@@ -392,6 +399,21 @@ const DrawingManager = () => {
           {tool.isEraser && <Eraser size={16} className="text-ink-900" />}
         </div>
 
+        {/* Ayuda de gestos */}
+        {estado === 'listo' && (
+          <div className="pointer-events-none absolute bottom-4 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 whitespace-nowrap rounded-full border border-white/10 bg-ink-950/75 px-4 py-2 text-xs text-slate-300 backdrop-blur">
+            <span className="flex items-center gap-1.5">
+              <Pointer size={14} className="text-brand-cyan" />
+              Índice arriba = dibujar
+            </span>
+            <span className="h-3 w-px bg-white/20" />
+            <span className="flex items-center gap-1.5">
+              <Eraser size={14} className="text-brand-amber" />
+              Puño = borrar
+            </span>
+          </div>
+        )}
+
         {/* Estados de la cámara */}
         {estado !== 'listo' && (
           <div className="absolute inset-0 z-40 flex items-center justify-center p-6">
@@ -408,6 +430,7 @@ const DrawingManager = () => {
                   <h3 className="mb-2 text-lg font-bold">Preparando la cámara…</h3>
                   <p className="text-sm text-slate-400">
                     Acepta el permiso del navegador y coloca tu mano frente a la cámara.
+                    Levanta el índice para empezar a dibujar.
                   </p>
                 </>
               )}
