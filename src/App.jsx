@@ -10,6 +10,7 @@ import ResetPassword from './pages/ResetPassword';
 import Home from './pages/Home';
 import Paint from './pages/Paint';
 import Consult from './pages/Consult';
+import { AUTH_HABILITADO, GALERIA_HABILITADA } from './config/features';
 
 export default function App() {
   return (
@@ -22,16 +23,29 @@ export default function App() {
 
           <main className="flex min-h-0 flex-1 flex-col">
             <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/registro" element={<Register />} />
-              <Route path="/recuperar" element={<RecoverPassword />} />
-              <Route path="/recuperar/:token" element={<ResetPassword />} />
+              {AUTH_HABILITADO ? (
+                <>
+                  <Route path="/" element={<Login />} />
+                  <Route path="/registro" element={<Register />} />
+                  <Route path="/recuperar" element={<RecoverPassword />} />
+                  <Route path="/recuperar/:token" element={<ResetPassword />} />
 
-              <Route element={<ProtectedRoute />}>
-                <Route path="/inicio" element={<Home />} />
-                <Route path="/pintar" element={<Paint />} />
-                <Route path="/consultar" element={<Consult />} />
-              </Route>
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/inicio" element={<Home />} />
+                    <Route path="/pintar" element={<Paint />} />
+                    {GALERIA_HABILITADA && <Route path="/consultar" element={<Consult />} />}
+                  </Route>
+                </>
+              ) : (
+                /* Sin login: se entra directo a la app. Las páginas de arriba
+                   siguen en el repo, solo no están enrutadas por ahora. */
+                <>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/inicio" element={<Home />} />
+                  <Route path="/pintar" element={<Paint />} />
+                  {GALERIA_HABILITADA && <Route path="/consultar" element={<Consult />} />}
+                </>
+              )}
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

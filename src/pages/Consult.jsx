@@ -60,7 +60,10 @@ const Consult = () => {
     (async () => {
       for (const img of imagenes) {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/guardar/${img._id}`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': 'true',
+          },
         });
         if (!res.ok || cancelado) continue;
         const blob = await res.blob();
@@ -83,7 +86,10 @@ const Consult = () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/guardar/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'ngrok-skip-browser-warning': 'true',
+        },
       });
       if (!res.ok) throw new Error('No se pudo eliminar');
       setImagenes((prev) => prev.filter((img) => img._id !== id));

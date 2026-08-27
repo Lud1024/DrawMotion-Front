@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Eraser, Brush, Trash2, CameraOff, Video } from 'lucide-react'
 import SaveButton from './SaveButton'
+import { GUARDAR_HABILITADO } from '../config/features'
 
 const COLORES = ['#0F172A', '#22D3EE', '#A78BFA', '#E879F9', '#FBBF24', '#34D399', '#F87171']
 const GROSORES = [3, 6, 12, 20]
@@ -337,7 +338,7 @@ const DrawingManager = () => {
               <span className="hidden sm:inline">Limpiar</span>
             </button>
 
-            <SaveButton canvasId="canvas" />
+            {GUARDAR_HABILITADO && <SaveButton canvasId="canvas" />}
           </div>
         </div>
       </div>

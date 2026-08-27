@@ -73,7 +73,10 @@ const SaveButton = ({ canvasId = 'canvas', areaId = 'drawing-area-bg' }) => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/guardar`, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'ngrok-skip-browser-warning': 'true',
+          },
           body: formData,
         })
 

@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, LogOut, Home as HomeIcon, Paintbrush, GalleryThumbnails } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
+import { AUTH_HABILITADO, GALERIA_HABILITADA } from '../config/features';
 
 const enlaces = [
   { to: '/inicio', label: 'Inicio', icon: HomeIcon },
   { to: '/pintar', label: 'Pintar', icon: Paintbrush },
-  { to: '/consultar', label: 'Mis dibujos', icon: GalleryThumbnails },
+  { to: '/consultar', label: 'Mis dibujos', icon: GalleryThumbnails, requiereGaleria: true },
 ];
 
 const Header = () => {
@@ -23,6 +24,10 @@ const Header = () => {
     navigate('/');
   };
 
+  // Sin login, la navegación se muestra siempre; con login, solo al estar autenticado
+  const mostrarNav = AUTH_HABILITADO ? isAuth : true;
+  const visibles = enlaces.filter((e) => !e.requiereGaleria || GALERIA_HABILITADA);
+
   const linkClase = ({ isActive }) =>
     `relative font-semibold transition-colors ${
       isActive ? 'text-brand-cyan' : 'text-slate-300 hover:text-white'
@@ -32,7 +37,7 @@ const Header = () => {
     <header className="sticky top-0 z-50 border-b border-white/10 bg-ink-950/80 backdrop-blur-lg">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
         {/* Marca */}
-        <NavLink to={isAuth ? '/inicio' : '/'} className="flex min-w-0 items-center gap-3">
+        <NavLink to="/" className="flex min-w-0 items-center gap-3">
           <img
             src="/logo.png"
             alt=""
@@ -43,19 +48,21 @@ const Header = () => {
           </span>
         </NavLink>
 
-        {isAuth && (
+        {mostrarNav && (
           <>
             {/* Navegación escritorio */}
             <nav className="hidden items-center gap-7 md:flex">
-              {enlaces.map(({ to, label }) => (
+              {visibles.map(({ to, label }) => (
                 <NavLink key={to} to={to} className={linkClase}>
                   {label}
                 </NavLink>
               ))}
-              <button onClick={handleLogout} className="btn-ghost px-5 py-2 text-sm">
-                <LogOut size={16} />
-                Cerrar sesión
-              </button>
+              {AUTH_HABILITADO && (
+                <button onClick={handleLogout} className="btn-ghost px-5 py-2 text-sm">
+                  <LogOut size={16} />
+                  Cerrar sesión
+                </button>
+              )}
             </nav>
 
             {/* Botón hamburguesa */}
@@ -72,10 +79,10 @@ const Header = () => {
       </div>
 
       {/* Navegación móvil */}
-      {isAuth && abierto && (
+      {mostrarNav && abierto && (
         <nav className="border-t border-white/10 bg-ink-900/95 px-4 py-3 md:hidden">
           <ul className="flex flex-col gap-1">
-            {enlaces.map(({ to, label, icon: Icon }) => (
+            {visibles.map(({ to, label, icon: Icon }) => (
               <li key={to}>
                 <NavLink
                   to={to}
@@ -92,15 +99,17 @@ const Header = () => {
                 </NavLink>
               </li>
             ))}
-            <li>
-              <button
-                onClick={handleLogout}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 font-semibold text-rose-300 transition-colors hover:bg-rose-500/10"
-              >
-                <LogOut size={18} />
-                Cerrar sesión
-              </button>
-            </li>
+            {AUTH_HABILITADO && (
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 font-semibold text-rose-300 transition-colors hover:bg-rose-500/10"
+                >
+                  <LogOut size={18} />
+                  Cerrar sesión
+                </button>
+              </li>
+            )}
           </ul>
         </nav>
       )}

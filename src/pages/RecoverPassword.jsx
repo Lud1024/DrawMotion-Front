@@ -17,7 +17,7 @@ function RecoverPassword() {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/recover`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
                 body: JSON.stringify({ email }),
             });
 

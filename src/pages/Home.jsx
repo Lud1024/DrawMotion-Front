@@ -10,6 +10,7 @@ import {
   Rocket,
   MousePointerClick,
 } from 'lucide-react';
+import { GALERIA_HABILITADA, GUARDAR_HABILITADO } from '../config/features';
 
 const pasos = [
   {
@@ -35,8 +36,9 @@ const pasos = [
     color: 'from-brand-amber to-orange-500',
     titulo: 'Guarda tu obra',
     texto: 'Ponle nombre a tu dibujo y guárdalo en tu galería para verlo cuando quieras.',
+    requiereGuardar: true,
   },
-];
+].filter((p) => !p.requiereGuardar || GUARDAR_HABILITADO);
 
 const features = [
   {
@@ -56,6 +58,7 @@ const features = [
     color: 'text-brand-pink',
     titulo: 'Tu galería, privada',
     texto: 'Cada cuenta guarda solo sus propios dibujos. Nadie más puede verlos ni tocarlos.',
+    requiereGaleria: true,
   },
   {
     icon: Smile,
@@ -63,9 +66,12 @@ const features = [
     titulo: 'Para todas las manos',
     texto: 'Ideal para niños, curiosos y personas a las que sostener un lápiz o usar el mouse se les complica.',
   },
-];
+].filter((f) => !f.requiereGaleria || GALERIA_HABILITADA);
 
 const Home = () => {
+  // El número de pasos cambia según lo que esté habilitado
+  const gridPasos = pasos.length >= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3';
+
   return (
     <div className="w-full bg-ink-950">
       {/* ───────── HERO ───────── */}
@@ -96,10 +102,12 @@ const Home = () => {
             <Palette size={20} />
             Empezar a dibujar
           </Link>
-          <Link to="/consultar" className="btn-ghost w-full sm:w-auto">
-            <ImagePlus size={20} />
-            Ver mi galería
-          </Link>
+          {GALERIA_HABILITADA && (
+            <Link to="/consultar" className="btn-ghost w-full sm:w-auto">
+              <ImagePlus size={20} />
+              Ver mi galería
+            </Link>
+          )}
         </div>
       </section>
 
@@ -111,7 +119,7 @@ const Home = () => {
             <p className="mx-auto mt-3 max-w-xl text-slate-400">Cuatro gestos y ya estás creando.</p>
           </div>
 
-          <ol className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className={`grid grid-cols-1 gap-5 sm:grid-cols-2 ${gridPasos}`}>
             {pasos.map(({ icon: Icon, color, titulo, texto }, i) => (
               <li
                 key={titulo}
