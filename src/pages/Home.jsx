@@ -1,237 +1,187 @@
-import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  Hand,
+  Sparkles,
+  Palette,
+  Camera,
+  ImagePlus,
+  ShieldCheck,
+  Smile,
+  Rocket,
+  MousePointerClick,
+} from 'lucide-react';
 
-const teamImages = [
-  { src: '/Jmario.jpeg', name: 'Ing. Jorge Mario Martínez' },
-  { src: '/villalta.jpeg', name: 'Ing. Luis Antony Villalta' },
-  { src: '/ludvin.jpeg', name: 'Ing. Ludvin Marco Tulio Alonzo López', descripcion: 'Desarrollador Junior en Empresa Portuaria Quetzal' },
-  { src: '/carla.jpeg', name: 'Ing. Carla Reneé Pérez Suriano' },
-  { src: '/sergio.jpeg', name: 'Ing. Sergio Otoniel Crocker Cristales' },
-  { src: '/mamfer.jpeg', name: 'Ing. Mamfer Geraldina Zamora Mejía' },
-  { src: '/kevin.jpeg', name: 'Ing. Kevin José Santos Hernández' },
-  { src: '/sauly.jpeg', name: 'Ing. Sauly Estefania Cermeño Morales' },
-  { src: '/diego.jpeg', name: 'Ing. Diego Hernándezz' },
-  { src: '/david.jpeg', name: 'Ing. Wilson David Ortega Quezada' },
-  { src: '/chaloexpo.png', name: 'Ing. José Abraham Revolorio Chalo ' },
+const pasos = [
+  {
+    icon: Camera,
+    color: 'from-brand-cyan to-sky-500',
+    titulo: 'Enciende la cámara',
+    texto: 'Abre DrawMotion en el navegador y dale permiso a tu cámara. Nada que instalar.',
+  },
+  {
+    icon: Hand,
+    color: 'from-brand-violet to-indigo-500',
+    titulo: 'Muestra tu mano',
+    texto: 'Un puntero mágico sigue tu dedo índice apenas lo pones frente a la pantalla.',
+  },
+  {
+    icon: MousePointerClick,
+    color: 'from-brand-pink to-fuchsia-600',
+    titulo: 'Junta o separa',
+    texto: 'Une índice y pulgar para dibujar, sepáralos para levantar el lápiz. Cierra el puño y borra.',
+  },
+  {
+    icon: ImagePlus,
+    color: 'from-brand-amber to-orange-500',
+    titulo: 'Guarda tu obra',
+    texto: 'Ponle nombre a tu dibujo y guárdalo en tu galería para verlo cuando quieras.',
+  },
 ];
 
-const techCards = [
+const features = [
   {
-    title: '¿Qué es este proyecto?',
-    content: 'Es una aplicación interactiva que te permite dibujar con el movimiento de tu mano, sin necesidad de usar mouse ni teclado. Solo necesitas una cámara y tu creatividad.'
+    icon: Sparkles,
+    color: 'text-brand-cyan',
+    titulo: 'Creatividad sin límites',
+    texto: 'No se acaba la hoja ni el color: puedes intentar, borrar y volver a intentarlo las veces que quieras.',
   },
   {
-    title: '¿Qué lo hace especial?',
-    content: (
-      <ul className="list-disc list-inside space-y-1">
-        <li>No necesitas contacto físico.</li>
-        <li>Detecta tus gestos en tiempo real.</li>
-        <li>Ideal para niños, artistas y personas con movilidad reducida.</li>
-        <li>Guarda tus dibujos automáticamente con tu nombre.</li>
-      </ul>
-    )
+    icon: Rocket,
+    color: 'text-brand-violet',
+    titulo: 'Cero instalación',
+    texto: 'Funciona directo en el navegador, desde una computadora, tablet o celular con cámara.',
   },
   {
-    title: '¿Cómo funciona?',
-    content: (
-      <ul className="list-disc list-inside space-y-1">
-        <li>Coloca tu mano frente a la cámara.</li>
-        <li>Junta tu índice y pulgar para empezar a dibujar.</li>
-        <li>Cierra el puño para borrar lo que dibujaste.</li>
-        <li>Usa un botón para guardar tu obra de arte en tu computadora.</li>
-      </ul>
-    )
+    icon: ShieldCheck,
+    color: 'text-brand-pink',
+    titulo: 'Tu galería, privada',
+    texto: 'Cada cuenta guarda solo sus propios dibujos. Nadie más puede verlos ni tocarlos.',
   },
   {
-    title: '¿Para quién es?',
-    content: (
-      <ul className="list-disc list-inside space-y-1">
-        <li>Estudiantes.</li>
-        <li>Educadores.</li>
-        <li>Artistas digitales.</li>
-        <li>Personas con discapacidades motrices.</li>
-        <li>Cualquier persona curiosa o creativa</li>
-      </ul>
-    )
-  },
-  {
-    title: 'Requisitos mínimos',
-    content: (
-      <ul className="list-disc list-inside space-y-1">
-        <li>Una cámara (webcam o de laptop).</li>
-        <li>Conexión a internet (para cargar la app).</li>
-        <li>Un navegador moderno (Chrome o Firefox).</li>
-      </ul>
-    )
-  },
-  {
-    title: '¿Qué puedes hacer con esta app?',
-    content: (
-      <ul className="list-disc list-inside space-y-1">
-        <li>Dibujar de forma libre y divertida.</li>
-        <li>Crear actividades educativas sin contacto.</li>
-        <li>Usarla en exposiciones o talleres creativos.</li>
-        <li>Desarrollar la motricidad fina a través del juego.</li>
-      </ul>
-    )
-  }
-];
-
-const techList = [
-  {
-    nombre: 'React',
-    color: 'border-blue-500 text-blue-800',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg',
-    descripcion: 'Librería de JavaScript para construir interfaces de usuario interactivas y reactivas.',
-  },
-  {
-    nombre: 'Node.js',
-    color: 'border-green-600 text-green-700',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/d/d9/Node.js_logo.svg',
-    descripcion: 'Entorno de ejecución para JavaScript del lado del servidor, ideal para apps escalables.',
-  },
-  {
-    nombre: 'MediaPipe',
-    color: 'border-red-400 text-red-600',
-    logo: '/pipe.png',
-    descripcion: 'Framework de Google para visión por computadora como reconocimiento de manos.',
-  },
-  {
-    nombre: 'Tailwind CSS',
-    color: 'border-cyan-500 text-cyan-700',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg',
-    descripcion: 'Framework de utilidades CSS para diseñar directamente en el HTML de forma rápida.',
-  },
-  {
-    nombre: 'MongoDB',
-    color: 'border-green-700 text-green-800',
-    logo: '/mongodb.jpg',
-    descripcion: 'Base de datos NoSQL orientada a documentos, ideal para trabajar con datos en JSON.',
+    icon: Smile,
+    color: 'text-brand-amber',
+    titulo: 'Para todas las manos',
+    texto: 'Ideal para niños, curiosos y personas a las que sostener un lápiz o usar el mouse se les complica.',
   },
 ];
 
 const Home = () => {
-  const [teamIndex, setTeamIndex] = useState(0);
-  const [cardIndex, setCardIndex] = useState(0);
-  const [techIndex, setTechIndex] = useState(0);
-
-  useEffect(() => {
-    const teamInterval = setInterval(() => {
-      setTeamIndex((prev) => (prev + 1) % teamImages.length);
-    }, 3000);
-    return () => clearInterval(teamInterval);
-  }, []);
-
-  useEffect(() => {
-    const cardInterval = setInterval(() => {
-      setCardIndex((prev) => (prev + 2) % techCards.length);
-    }, 10000);
-    return () => clearInterval(cardInterval);
-  }, []);
-
-  useEffect(() => {
-    const techInterval = setInterval(() => {
-      setTechIndex((prev) => (prev + 1) % techList.length);
-    }, 4000);
-    return () => clearInterval(techInterval);
-  }, []);
-
   return (
-    <div className="h-screen w-full flex flex-row text-white m-0 p-0 overflow-hidden">
-      {/* Sección 1: EQUIPO */}
-<section className="w-1/3 h-full p-6 flex flex-col items-center text-center space-y-2" style={{ backgroundColor: '#e4fbfb' }}>
-  <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-800 to-cyan-500 tracking-wide uppercase drop-shadow-lg">
-    Equipo de Desarrollo
-  </h2>
-  <p className="text-lg leading-snug text-gray-800 px-4 font-medium">
-    Alumnos del noveno semestre de ingeniería en sistemas de la Universidad Mariano Gálvez.
-  </p>
+    <div className="w-full bg-ink-950">
+      {/* ───────── HERO ───────── */}
+      <section className="relative isolate overflow-hidden px-4 pb-20 pt-16 text-center sm:px-6 sm:pb-24 sm:pt-20">
+        {/* Manchas de color de fondo */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+          <div className="animate-blob absolute -left-24 -top-24 h-64 w-64 rounded-full bg-brand-violet/25 blur-3xl sm:h-96 sm:w-96" />
+          <div className="animate-blob absolute -right-24 top-1/3 h-64 w-64 rounded-full bg-brand-cyan/20 blur-3xl sm:h-96 sm:w-96" />
+          <div className="animate-blob absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-brand-amber/15 blur-3xl sm:h-72 sm:w-72" />
+        </div>
 
-  <div className="flex flex-col items-center justify-center relative overflow-hidden h-[28rem] w-full">
-    {teamImages.map((member, i) => {
-      const isActive = i === teamIndex;
-      return (
-        <div
-          key={i}
-          className={`absolute flex flex-col items-center transition-all duration-[2000ms] ease-in-out
-            ${isActive ? 'opacity-100 blur-0 z-10 scale-100' : 'opacity-0 blur-md scale-95 z-0'}`}
-        >
-          <img
-            src={member.src}
-            alt={member.name}
-            className="w-80 h-80 object-cover rounded-3xl border-4 transform transition-transform duration-700 hover:scale-110 z-20"
-            style={{ borderColor: '#1e293b' }}
-          />
-          <p className="mt-3 text-sm font-semibold text-white text-center bg-[#1e293b] px-3 py-1 rounded-md shadow">
-            {member.name}
-          </p>
-          {member.descripcion && (
-            <p className="mt-1 text-xs text-gray-200 bg-gray-800 bg-opacity-80 px-3 py-1 rounded-md max-w-xs">
-              {member.descripcion}
+        <span className="mx-auto inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur sm:text-sm">
+          <Hand size={16} className="shrink-0 text-brand-cyan" />
+          <span className="truncate">Dibuja moviendo la mano en el aire</span>
+        </span>
+
+        <h1 className="mx-auto mt-6 max-w-4xl text-balance text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+          Tu mano es el
+          <span className="text-gradient mt-1 block">único pincel que necesitas</span>
+        </h1>
+
+        <p className="mx-auto mt-6 max-w-2xl text-base text-slate-300 sm:text-lg md:text-xl">
+          Sin lápiz, sin mouse, sin nada que instalar. Solo tu cámara, tu imaginación y ganas de crear.
+        </p>
+
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+          <Link to="/pintar" className="btn-primary w-full sm:w-auto">
+            <Palette size={20} />
+            Empezar a dibujar
+          </Link>
+          <Link to="/consultar" className="btn-ghost w-full sm:w-auto">
+            <ImagePlus size={20} />
+            Ver mi galería
+          </Link>
+        </div>
+      </section>
+
+      {/* ───────── CÓMO FUNCIONA ───────── */}
+      <section className="border-t border-white/5 bg-ink-900 px-4 py-16 sm:px-6 sm:py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 text-center sm:mb-14">
+            <h2 className="text-3xl font-extrabold sm:text-4xl">Dibujar nunca fue tan fácil</h2>
+            <p className="mx-auto mt-3 max-w-xl text-slate-400">Cuatro gestos y ya estás creando.</p>
+          </div>
+
+          <ol className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {pasos.map(({ icon: Icon, color, titulo, texto }, i) => (
+              <li
+                key={titulo}
+                className="card group relative p-6 transition-transform duration-300 hover:-translate-y-1"
+              >
+                <span
+                  aria-hidden
+                  className="absolute right-4 top-3 select-none font-display text-5xl font-black text-white/[0.06]"
+                >
+                  {i + 1}
+                </span>
+                <div
+                  className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${color} shadow-lg`}
+                >
+                  <Icon size={22} className="text-ink-950" />
+                </div>
+                <h3 className="mb-2 text-lg font-bold">{titulo}</h3>
+                <p className="text-sm leading-relaxed text-slate-400">{texto}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ───────── BENEFICIOS ───────── */}
+      <section className="border-t border-white/5 bg-gradient-to-b from-ink-950 to-ink-900 px-4 py-16 sm:px-6 sm:py-20">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-12 text-center sm:mb-14">
+            <h2 className="text-3xl font-extrabold sm:text-4xl">
+              Hecho para jugar, pensado para aprender
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-slate-400">
+              Detrás de cada trazo hay coordinación, atención y mucha imaginación.
             </p>
-          )}
-        </div>
-      );
-    })}
-  </div>
-</section>
+          </div>
 
-
-      {/* Sección 2: TECNOLOGÍA */}
-      <section className="w-1/3 h-full relative overflow-hidden flex items-center justify-center bg-red-500/50">
-
-  {/* Título fijo */}
-  <div className="absolute top-6 w-full text-center z-20">
-<h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-900 to-blue-500 tracking-wide drop-shadow-xl">
-  ¿DrawMotion?
-</h2>
-
-  </div>
-
-  {/* Tarjetas tipo carrusel en pares */}
-  {[0, 1].map((offset) => {
-    const i = (cardIndex + offset) % techCards.length;
-    const card = techCards[i];
-    return (
-      <div
-        key={i}
-        className={`absolute ${offset === 0 ? 'top-24' : 'top-[22rem]'} left-6 right-6 transition-opacity duration-[2000ms] ease-in-out z-10`}
-      >
-       <div className="bg-white bg-opacity-90 rounded-3xl p-6 border-4 border-red-600 shadow-2xl hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] transform hover:scale-105 transition-transform duration-500 text-red-700 min-h-[220px]">
-
-
-          <h3 className="text-lg font-bold text-red-800 mb-3">{card.title}</h3>
-          <div>{card.content}</div>
-        </div>
-      </div>
-    );
-  })}
-</section>
-
-
-      {/* Sección 3: INTERACCIÓN como carrusel */}
-      <section className="w-1/3 h-full p-6 overflow-hidden" style={{ backgroundColor: '#c9d3d3' }}>
-        <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-900 to-blue-500 tracking-wide uppercase drop-shadow-xl text-center mb-6">
-          Tecnologías
-        </h2>
-        <div className="relative h-[17rem]">
-          {techList.map((tech, i) => (
-            <div
-              key={i}
-              className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out 
-                ${i === techIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-            >
-              <div className={`bg-white bg-opacity-90 rounded-3xl p-4 border-4 ${tech.color} shadow-xl transform transition duration-500 w-full h-full flex flex-col justify-center items-center text-center`}>
-                <img src={tech.logo} alt={tech.nombre} className="w-16 h-16 object-contain mb-2" />
-                <span className={`text-xl font-bold mb-2 ${tech.color}`}>{tech.nombre}</span>
-                <p className="text-sm text-gray-700 max-w-xs">{tech.descripcion}</p>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            {features.map(({ icon: Icon, color, titulo, texto }) => (
+              <div key={titulo} className="card flex items-start gap-4 p-6 sm:gap-5">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-ink-950">
+                  <Icon size={20} className={color} />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="mb-1 text-lg font-bold">{titulo}</h3>
+                  <p className="text-sm leading-relaxed text-slate-400">{texto}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
+      </section>
+
+      {/* ───────── CTA FINAL ───────── */}
+      <section className="relative isolate overflow-hidden border-t border-white/5 px-4 py-20 text-center sm:px-6">
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+          <div className="animate-blob absolute -bottom-24 right-1/4 h-64 w-64 rounded-full bg-brand-pink/20 blur-3xl sm:h-80 sm:w-80" />
+          <div className="animate-blob absolute -top-24 left-1/4 h-64 w-64 rounded-full bg-brand-cyan/20 blur-3xl sm:h-80 sm:w-80" />
+        </div>
+
+        <h2 className="text-3xl font-extrabold sm:text-4xl">¿Listo para mover las manos?</h2>
+        <p className="mx-auto mt-4 max-w-xl text-slate-300">
+          Abre la cámara, junta el índice con el pulgar y deja que tu creatividad haga el resto.
+        </p>
+        <Link to="/pintar" className="btn-primary mt-8 w-full sm:w-auto">
+          <Palette size={20} />
+          Crear mi primer dibujo
+        </Link>
       </section>
     </div>
   );
 };
 
 export default Home;
-

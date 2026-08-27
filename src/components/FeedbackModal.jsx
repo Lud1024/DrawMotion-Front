@@ -1,17 +1,21 @@
+import { CheckCircle2, XCircle } from 'lucide-react'
+
 const FeedbackModal = ({ isOpen, success, message, onClose }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded shadow-md w-80 text-center">
-        <h2 className={`text-lg font-semibold mb-4 ${success ? 'text-green-600' : 'text-red-600'}`}>
-          {success ? '¡Éxito!' : 'Error'}
-        </h2>
-        <p className="mb-4">{message}</p>
-        <button
-          onClick={onClose}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-950/80 p-4 backdrop-blur-sm">
+      <div className="card w-full max-w-sm p-6 text-center">
+        {success ? (
+          <CheckCircle2 size={40} className="mx-auto mb-3 text-emerald-400" />
+        ) : (
+          <XCircle size={40} className="mx-auto mb-3 text-rose-400" />
+        )}
+
+        <h2 className="mb-2 text-xl font-bold">{success ? '¡Éxito!' : 'Error'}</h2>
+        <p className="mb-5 text-sm text-slate-400">{message}</p>
+
+        <button onClick={onClose} className="btn-primary w-full py-2 text-sm">
           Cerrar
         </button>
       </div>

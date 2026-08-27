@@ -1,198 +1,107 @@
 import { useEffect, useRef, useState } from 'react'
-const token = localStorage.getItem('token');
+import { Eraser, Brush, Trash2, CameraOff, Video } from 'lucide-react'
+import SaveButton from './SaveButton'
 
-// ✅ MODAL DE NOMBRE
-const NameModal = ({ isOpen, onClose, onConfirm }) => {
-  const [nombre, setNombre] = useState('')
+const COLORES = ['#0F172A', '#22D3EE', '#A78BFA', '#E879F9', '#FBBF24', '#34D399', '#F87171']
+const GROSORES = [3, 6, 12, 20]
 
-  const handleSubmit = () => {
-    if (nombre.trim()) {
-      onConfirm(nombre.trim())
-      setNombre('')
-    }
-  }
-
-  if (!isOpen) return null
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
-      <div className="bg-white p-6 rounded shadow-lg w-80">
-        <h2 className="text-xl font-bold mb-4">Nombre del dibujo</h2>
-        <input
-          type="text"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          className="border border-gray-300 px-3 py-2 w-full rounded mb-4"
-          placeholder="Escribe tu nombre"
-        />
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={onClose}
-            className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            Confirmar
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ✅ MODAL DE RESULTADO
-const FeedbackModal = ({ isOpen, success, message, onClose }) => {
-  if (!isOpen) return null
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
-      <div className="bg-white p-6 rounded shadow-lg w-80 text-center">
-        <h2 className={`text-xl font-bold mb-4 ${success ? 'text-green-600' : 'text-red-600'}`}>
-          {success ? 'Éxito' : 'Error'}
-        </h2>
-        <p className="mb-4">{message}</p>
-        <button
-          onClick={onClose}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Cerrar
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ✅ DRAWING CANVAS
+// ✅ LIENZO — se ajusta al tamaño de su contenedor y conserva el trazo al redimensionar
 const DrawingCanvas = ({
   smoothedX,
   smoothedY,
   isEraser,
   draw,
   inside,
-  brushColor = 'black',
-  brushSize = 5,
+  brushColor = '#0F172A',
+  brushSize = 6,
   reset,
+  canvasRef,
 }) => {
-  const canvasRef = useRef(null)
   const prev = useRef({ x: null, y: null })
 
   useEffect(() => {
     const canvas = canvasRef.current
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
-  }, [])
+    const parent = canvas?.parentElement
+    if (!canvas || !parent) return
+
+    const ajustar = () => {
+      const { width, height } = parent.getBoundingClientRect()
+      const w = Math.max(1, Math.round(width))
+      const h = Math.max(1, Math.round(height))
+      if (canvas.width === w && canvas.height === h) return
+
+      // Copiamos lo dibujado para no perderlo al cambiar el tamaño
+      const copia = document.createElement('canvas')
+      copia.width = canvas.width || 1
+      copia.height = canvas.height || 1
+      if (canvas.width && canvas.height) {
+        copia.getContext('2d').drawImage(canvas, 0, 0)
+      }
+
+      canvas.width = w
+      canvas.height = h
+
+      if (copia.width > 1 && copia.height > 1) {
+        canvas
+          .getContext('2d')
+          .drawImage(copia, 0, 0, copia.width, copia.height, 0, 0, w, h)
+      }
+      prev.current = { x: null, y: null }
+    }
+
+    ajustar()
+    const observer = new ResizeObserver(ajustar)
+    observer.observe(parent)
+    return () => observer.disconnect()
+  }, [canvasRef])
 
   useEffect(() => {
-    const ctx = canvasRef.current.getContext('2d')
-    if (draw && inside) {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+
+    if (draw && inside && smoothedX != null && smoothedY != null) {
       if (prev.current.x !== null && prev.current.y !== null) {
         ctx.beginPath()
         ctx.moveTo(prev.current.x, prev.current.y)
         ctx.lineTo(smoothedX, smoothedY)
         ctx.strokeStyle = isEraser ? '#ffffff' : brushColor
-        ctx.lineWidth = isEraser ? brushSize * 5 : brushSize
+        ctx.lineWidth = isEraser ? brushSize * 4 : brushSize
         ctx.lineCap = 'round'
+        ctx.lineJoin = 'round'
         ctx.stroke()
       }
       prev.current = { x: smoothedX, y: smoothedY }
     } else {
       prev.current = { x: null, y: null }
     }
-  }, [draw, smoothedX, smoothedY, isEraser, inside, brushColor, brushSize, reset])
-
-  return <canvas ref={canvasRef} id="canvas" className="absolute top-0 left-0 z-20" />
-}
-
-// ✅ BOTÓN GUARDAR
-const SaveButton = () => {
-  const [showNameModal, setShowNameModal] = useState(false)
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
-  const [feedback, setFeedback] = useState({ success: false, message: '' })
-
-  const handleConfirmName = (nombre) => {
-    const originalCanvas = document.getElementById('canvas')
-    if (!originalCanvas) {
-      setFeedback({ success: false, message: 'No se encontró el canvas.' })
-      setShowFeedbackModal(true)
-      return
-    }
-
-    const exportCanvas = document.createElement('canvas')
-    exportCanvas.width = originalCanvas.width
-    exportCanvas.height = originalCanvas.height
-    const ctx = exportCanvas.getContext('2d')
-    ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height)
-    ctx.drawImage(originalCanvas, 0, 0)
-
-    exportCanvas.toBlob(async (blob) => {
-      const formData = new FormData()
-      formData.append('file', blob, `${nombre}_${Date.now()}.png`)
-      formData.append('nombre', nombre)
-
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/guardar`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        });
-
-        setFeedback({
-          success: res.ok,
-          message: res.ok
-            ? 'Dibujo guardado con éxito.'
-            : 'Error al guardar el dibujo.',
-        });
-      } catch {
-        setFeedback({ success: false, message: 'No se pudo conectar con el servidor.' })
-      } finally {
-        setShowNameModal(false)
-        setShowFeedbackModal(true)
-      }
-    }, 'image/png')
-  }
+  }, [draw, smoothedX, smoothedY, isEraser, inside, brushColor, brushSize, reset, canvasRef])
 
   return (
-    <>
-      <button
-        onClick={() => setShowNameModal(true)}
-        className="absolute top-4 left-4 z-30 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 shadow"
-      >
-        Guardar dibujo
-      </button>
-
-      <NameModal
-        isOpen={showNameModal}
-        onClose={() => setShowNameModal(false)}
-        onConfirm={handleConfirmName}
-      />
-
-      <FeedbackModal
-        isOpen={showFeedbackModal}
-        success={feedback.success}
-        message={feedback.message}
-        onClose={() => setShowFeedbackModal(false)}
-      />
-    </>
+    <canvas
+      ref={canvasRef}
+      id="canvas"
+      className="pointer-events-none absolute inset-0 z-20 h-full w-full"
+    />
   )
 }
 
 // ✅ COMPONENTE PRINCIPAL
 const DrawingManager = () => {
   const videoRef = useRef(null)
+  const stageRef = useRef(null)
   const areaRef = useRef(null)
   const iconRef = useRef(null)
+  const canvasRef = useRef(null)
 
   const [devices, setDevices] = useState([])
   const [selectedDeviceId, setSelectedDeviceId] = useState(null)
   const [tool, setTool] = useState({ x: 0, y: 0, isEraser: false })
   const [drawState, setDrawState] = useState({ draw: false, inside: false, reset: 0 })
+  const [color, setColor] = useState(COLORES[0])
+  const [grosor, setGrosor] = useState(GROSORES[1])
+  const [estado, setEstado] = useState('cargando') // cargando | listo | error
+  const [mensaje, setMensaje] = useState('')
 
   const smoothedX = useRef(null)
   const smoothedY = useRef(null)
@@ -200,16 +109,30 @@ const DrawingManager = () => {
   const activeFrames = useRef(0)
 
   useEffect(() => {
-    navigator.mediaDevices.enumerateDevices().then(devices => {
-      const videoInputs = devices.filter(d => d.kind === 'videoinput')
-      setDevices(videoInputs)
-      if (videoInputs[0]) setSelectedDeviceId(videoInputs[0].deviceId)
-    })
+    if (!navigator.mediaDevices?.enumerateDevices) return
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then((lista) => {
+        const videoInputs = lista.filter((d) => d.kind === 'videoinput')
+        setDevices(videoInputs)
+        if (videoInputs[0]) setSelectedDeviceId(videoInputs[0].deviceId)
+      })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
+    if (!window.Hands || !window.Camera) {
+      setEstado('error')
+      setMensaje('No se pudieron cargar las librerías de detección de manos. Revisa tu conexión.')
+      return
+    }
+
+    let cancelado = false
+    let stream = null
+    let camera = null
+
     const hands = new window.Hands({
-      locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
     })
 
     hands.setOptions({
@@ -219,37 +142,47 @@ const DrawingManager = () => {
       minTrackingConfidence: 0.8,
     })
 
-    hands.onResults(results => {
+    hands.onResults((results) => {
+      const stage = stageRef.current?.getBoundingClientRect()
       const area = areaRef.current?.getBoundingClientRect()
-      if (!area || !results.multiHandLandmarks?.length) return
+      if (!stage || !area || !results.multiHandLandmarks?.length) return
+
+      // Coordenadas relativas al "stage" (que es donde vive el canvas),
+      // no al viewport: así el trazo cae justo bajo el dedo en cualquier pantalla.
+      const offX = area.left - stage.left
+      const offY = area.top - stage.top
 
       const landmarks = results.multiHandLandmarks[0]
-      const x = landmarks[8].x * area.width + area.left
-      const y = landmarks[8].y * area.height + area.top
-      const thumbX = landmarks[4].x * area.width + area.left
-      const thumbY = landmarks[4].y * area.height + area.top
+      // El video se muestra en espejo, así que invertimos X para que el trazo
+      // coincida con lo que el usuario ve en pantalla.
+      const x = (1 - landmarks[8].x) * area.width + offX
+      const y = landmarks[8].y * area.height + offY
+      const thumbX = (1 - landmarks[4].x) * area.width + offX
+      const thumbY = landmarks[4].y * area.height + offY
 
-      smoothedX.current = smoothedX.current == null ? x : smoothFactor * smoothedX.current + (1 - smoothFactor) * x
-      smoothedY.current = smoothedY.current == null ? y : smoothFactor * smoothedY.current + (1 - smoothFactor) * y
+      smoothedX.current =
+        smoothedX.current == null ? x : smoothFactor * smoothedX.current + (1 - smoothFactor) * x
+      smoothedY.current =
+        smoothedY.current == null ? y : smoothFactor * smoothedY.current + (1 - smoothFactor) * y
 
-      const isFist = [8, 12, 16, 20].every(i => landmarks[i].y > landmarks[i - 2].y + 0.03)
+      const isFist = [8, 12, 16, 20].every((i) => landmarks[i].y > landmarks[i - 2].y + 0.03)
+      // Umbral proporcional al tamaño del área: funciona igual en móvil que en escritorio
+      const umbral = Math.max(18, area.width * 0.022)
       const pinch = Math.hypot(x - thumbX, y - thumbY)
-      const draw = pinch < 30 || isFist
+      const draw = pinch < umbral || isFist
 
       const inside =
-        smoothedX.current >= area.left &&
-        smoothedX.current <= area.right &&
-        smoothedY.current >= area.top &&
-        smoothedY.current <= area.bottom
+        smoothedX.current >= offX &&
+        smoothedX.current <= offX + area.width &&
+        smoothedY.current >= offY &&
+        smoothedY.current <= offY + area.height
 
       setTool({ x: smoothedX.current, y: smoothedY.current, isEraser: isFist })
 
       if (iconRef.current) {
-        iconRef.current.style.left = `${smoothedX.current - 15}px`
-        iconRef.current.style.top = `${smoothedY.current - 15}px`
-        iconRef.current.src = isFist
-          ? 'https://cdn-icons-png.flaticon.com/512/3075/3075977.png'
-          : 'https://cdn-icons-png.flaticon.com/512/2821/2821785.png'
+        iconRef.current.style.transform = `translate(${smoothedX.current - 15}px, ${
+          smoothedY.current - 15
+        }px)`
       }
 
       if (draw && inside) {
@@ -258,7 +191,7 @@ const DrawingManager = () => {
         activeFrames.current--
       }
 
-      setDrawState(prev => ({
+      setDrawState((prev) => ({
         draw: activeFrames.current > 0,
         inside,
         reset: prev.reset + 1,
@@ -267,67 +200,220 @@ const DrawingManager = () => {
 
     const setupCamera = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined }
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: selectedDeviceId
+            ? { deviceId: { exact: selectedDeviceId } }
+            : { facingMode: 'user' },
         })
-        const video = videoRef.current
-        video.srcObject = stream
-        video.onloadedmetadata = () => {
-          video.play()
-          const camera = new window.Camera(video, {
-            onFrame: async () => {
-              if (video.videoWidth > 0 && video.videoHeight > 0) {
-                await hands.send({ image: video })
-              }
-            },
-            width: 640,
-            height: 480,
-          })
-          camera.start()
+
+        if (cancelado) {
+          stream.getTracks().forEach((t) => t.stop())
+          return
         }
+
+        const video = videoRef.current
+        if (!video) return
+        video.srcObject = stream
+
+        await new Promise((resolve) => {
+          if (video.readyState >= 1) return resolve()
+          video.onloadedmetadata = resolve
+        })
+        if (cancelado) return
+
+        await video.play().catch(() => {})
+
+        camera = new window.Camera(video, {
+          onFrame: async () => {
+            if (video.videoWidth > 0 && video.videoHeight > 0) {
+              await hands.send({ image: video })
+            }
+          },
+          width: 640,
+          height: 480,
+        })
+        camera.start()
+        setEstado('listo')
       } catch (err) {
         console.error('Error al acceder a la cámara:', err)
+        setEstado('error')
+        setMensaje('No pudimos acceder a tu cámara. Revisa los permisos del navegador.')
       }
     }
 
     setupCamera()
+
+    return () => {
+      cancelado = true
+      try {
+        camera?.stop()
+      } catch {
+        /* noop */
+      }
+      try {
+        stream?.getTracks().forEach((t) => t.stop())
+      } catch {
+        /* noop */
+      }
+      try {
+        hands.close()
+      } catch {
+        /* noop */
+      }
+    }
   }, [selectedDeviceId])
 
+  const limpiar = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+  }
+
   return (
-    <div className="relative w-full h-full overflow-hidden bg-gray-100">
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* ───── Barra de herramientas ───── */}
+      <div className="z-30 shrink-0 border-b border-white/10 bg-ink-900/80 px-3 py-3 backdrop-blur sm:px-5">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-4 gap-y-3 sm:justify-between">
+          {/* Colores */}
+          <div className="flex items-center gap-2">
+            <Brush size={16} className="hidden text-slate-400 sm:block" />
+            <div className="flex flex-wrap items-center gap-1.5">
+              {COLORES.map((c) => (
+                <button
+                  key={c}
+                  onClick={() => setColor(c)}
+                  aria-label={`Color ${c}`}
+                  className={`h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 sm:h-8 sm:w-8 ${
+                    color === c ? 'border-white scale-110' : 'border-white/20'
+                  }`}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          </div>
 
+          {/* Grosor */}
+          <div className="flex items-center gap-1.5">
+            {GROSORES.map((g) => (
+              <button
+                key={g}
+                onClick={() => setGrosor(g)}
+                aria-label={`Grosor ${g}`}
+                className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${
+                  grosor === g
+                    ? 'border-brand-cyan bg-brand-cyan/15'
+                    : 'border-white/15 bg-white/5 hover:bg-white/10'
+                }`}
+              >
+                <span
+                  className="rounded-full bg-slate-200"
+                  style={{ width: `${g}px`, height: `${g}px` }}
+                />
+              </button>
+            ))}
+          </div>
+
+          {/* Acciones */}
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {devices.length > 1 && (
+              <label className="flex items-center gap-2 text-xs text-slate-400">
+                <Video size={16} className="shrink-0" />
+                <select
+                  value={selectedDeviceId ?? ''}
+                  onChange={(e) => setSelectedDeviceId(e.target.value)}
+                  className="max-w-[9rem] rounded-lg border border-white/15 bg-ink-800 px-2 py-1.5 text-xs text-slate-200 outline-none focus:border-brand-cyan/60"
+                >
+                  {devices.map((d, i) => (
+                    <option key={d.deviceId} value={d.deviceId}>
+                      {d.label || `Cámara ${i + 1}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
+            <button onClick={limpiar} className="btn-ghost px-4 py-2 text-sm">
+              <Trash2 size={16} />
+              <span className="hidden sm:inline">Limpiar</span>
+            </button>
+
+            <SaveButton canvasId="canvas" />
+          </div>
+        </div>
+      </div>
+
+      {/* ───── Escenario de dibujo ───── */}
       <div
-        ref={areaRef}
-        id="drawing-area-bg"
-        className="absolute top-[10%] left-[10%] w-[70vw] h-[70vh] bg-white border-4 border-red-500 z-0"
-      ></div>
+        ref={stageRef}
+        className="relative flex min-h-[55vh] flex-1 overflow-hidden p-3 sm:p-5"
+      >
+        {/* Hoja blanca — el stage es flex y la hoja se estira sola (stretch).
+            No usar h-full: el porcentaje no resuelve contra la altura de un flex item. */}
+        <div
+          ref={areaRef}
+          id="drawing-area-bg"
+          className="mx-auto w-full max-w-5xl rounded-2xl border-2 border-brand-cyan/40 bg-white shadow-2xl shadow-black/40"
+        />
 
-      <video
-        ref={videoRef}
-        className="absolute top-4 right-1 w-[240px] h-auto z-20 border border-white shadow-md"
-        autoPlay
-        muted
-        playsInline
-      />
+        <DrawingCanvas
+          canvasRef={canvasRef}
+          smoothedX={smoothedX.current}
+          smoothedY={smoothedY.current}
+          isEraser={tool.isEraser}
+          draw={drawState.draw}
+          inside={drawState.inside}
+          brushColor={color}
+          brushSize={grosor}
+          reset={drawState.reset}
+        />
 
-      <DrawingCanvas
-        smoothedX={smoothedX.current}
-        smoothedY={smoothedY.current}
-        isEraser={tool.isEraser}
-        draw={drawState.draw}
-        inside={drawState.inside}
-        reset={drawState.reset}
-      />
+        {/* Vista de la cámara (en espejo) */}
+        <video
+          ref={videoRef}
+          className="absolute right-4 top-4 z-30 w-24 rounded-xl border border-white/20 shadow-lg sm:w-32 md:w-44"
+          style={{ transform: 'scaleX(-1)' }}
+          autoPlay
+          muted
+          playsInline
+        />
 
-      <img
-        ref={iconRef}
-        alt=""
-        className="absolute w-[30px] z-30 pointer-events-none select-none"
-        style={{
-          top: `${tool.y - 15}px`,
-          left: `${tool.x - 15}px`,
-        }}
-      />
+        {/* Puntero que sigue el dedo */}
+        <div
+          ref={iconRef}
+          aria-hidden
+          className="pointer-events-none absolute left-0 top-0 z-30 flex h-[30px] w-[30px] items-center justify-center rounded-full shadow-lg transition-colors"
+          style={{
+            backgroundColor: tool.isEraser ? '#ffffff' : color,
+            border: '2px solid rgba(255,255,255,0.85)',
+            opacity: estado === 'listo' ? 1 : 0,
+          }}
+        >
+          {tool.isEraser && <Eraser size={16} className="text-ink-900" />}
+        </div>
+
+        {/* Estados de la cámara */}
+        {estado !== 'listo' && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center p-6">
+            <div className="card max-w-sm p-6 text-center">
+              {estado === 'error' ? (
+                <>
+                  <CameraOff className="mx-auto mb-3 text-rose-400" size={36} />
+                  <h3 className="mb-2 text-lg font-bold">Cámara no disponible</h3>
+                  <p className="text-sm text-slate-400">{mensaje}</p>
+                </>
+              ) : (
+                <>
+                  <Video className="mx-auto mb-3 animate-pulse text-brand-cyan" size={36} />
+                  <h3 className="mb-2 text-lg font-bold">Preparando la cámara…</h3>
+                  <p className="text-sm text-slate-400">
+                    Acepta el permiso del navegador y coloca tu mano frente a la cámara.
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

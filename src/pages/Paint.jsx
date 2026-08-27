@@ -1,7 +1,7 @@
 import DrawingManager from '../components/DrawingManager'
 
 const Paint = () => (
-  <div className="w-full h-[calc(100vh-120px)] relative">
+  <div className="flex min-h-0 flex-1 flex-col bg-ink-950">
     <DrawingManager />
   </div>
 )

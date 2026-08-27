@@ -1,3 +1,98 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    @apply min-h-full;
+  }
+
+  html {
+    /* El fondo vive en el html para que nunca aparezca una franja blanca,
+       ni al hacer overscroll ni cuando el contenido es más corto que la pantalla */
+    background-color: theme('colors.ink.950');
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply m-0 p-0 bg-ink-950 text-slate-100 font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+
+  /* Nada debe provocar scroll horizontal en móvil */
+  body {
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-bold text-ink-950
+           bg-gradient-to-r from-brand-cyan via-brand-violet to-brand-pink
+           shadow-lg shadow-brand-violet/25 transition-transform duration-200
+           hover:scale-[1.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan
+           focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 active:scale-100;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-semibold
+           text-slate-100 border border-white/20 bg-white/5 backdrop-blur
+           transition-colors hover:bg-white/10 focus:outline-none
+           focus-visible:ring-2 focus-visible:ring-brand-cyan;
+  }
+
+  .card {
+    @apply rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-sm
+           shadow-xl shadow-black/20;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-white/15 bg-ink-800/70 px-4 py-3 text-slate-100
+           placeholder:text-slate-400 outline-none transition
+           focus:border-brand-cyan/60 focus:ring-2 focus:ring-brand-cyan/30;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-cyan via-brand-violet to-brand-amber;
+  }
+}
+
+/* Scrollbar acorde al tema oscuro */
+@layer utilities {
+  .scrollbar-brand {
+    scrollbar-color: theme('colors.ink.600') transparent;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: theme('colors.ink.900');
+}
+::-webkit-scrollbar-thumb {
+  background: theme('colors.ink.600');
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.ink.500');
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
